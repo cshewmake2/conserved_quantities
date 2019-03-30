@@ -86,43 +86,73 @@ def train_encoder(state_derivs, encoding_dim, num_layers, l1_penalty):
 	(num_data_pts, input_dim) = state_derivs.shape
 
 	print(input_dim)
+	
 	input_layer = Input(shape=(input_dim,))
 
 	autoencoder = Sequential()
 
-	for n in range(num_layers):
-		if n==0:
-
-			autoencoder.add( Dense(input_dim, input_shape=(input_dim,), activation='tanh') )
-		else:
-			autoencoder.add( Dense(input_dim, activation='tanh'))
-
-	if num_layers == 0:
-		autoencoder.add(    Dense(encoding_dim, input_shape=(input_dim,), activation='tanh') )
-	else:
-		autoencoder.add(  Dense(encoding_dim, activation='tanh') )
-
-	for n in range(num_layers):
-		if n==0:
-
-			autoencoder.add( Dense(input_dim, input_shape=(input_dim,), activation='tanh') )
-		else:
-			autoencoder.add( Dense(input_dim, activation='tanh'))
-
-
-	encoding_layer = autoencoder.layers[num_layers]
-	encoder = Model(input)
+	encoder = Sequential()
 	decoder = Sequential()
 
+	for n in range(num_layers):
+		if n==0:
+			layer = Dense(input_dim, input_shape=(input_dim,), activation='tanh')
+			autoencoder.add( layer)
+			encoder.add(layer)
+		else:
+			layer = Dense(input_dim, activation='tanh')
+			autoencoder.add(layer)
+			encoder.add(layer)
 
-	autoencoder.add( Dense(input_dim, activation='linear') )
+
+	if num_layers == 0:
+		layer_current = Dense(encoding_dim, input_shape=(input_dim,), activation='tanh')
+		autoencoder.add( layer_current)
+		encoder.add(layer_current)
+	else:
+		layer_current = Dense(encoding_dim, activation='tanh')
+		autoencoder.add( layer_current )
+		encoder.add(layer_current)
+
+
+	for n in range(num_layers):
+		
+		layer = Dense(input_dim, activation='tanh')
+		autoencoder.add(layer)
+		decoder.add(layer)
+
+
+	output_layer = Dense(input_dim, activation='linear')
+	autoencoder.add( output_layer )
+	decoder.add(output_layer)
+
+	# build encoder
+	# input_vals = Input(shape=(input_dim,))
+	
+	# encoding_layer = autoencoder.layers[0](input_vals)
+	
+	# for n in range(num_layers):
+	# 	encoding_layer = autoencoder.layers[n+1](encoding_layer)
+
+	# encoder = Model(input_vals, encoding_layer)
+
+
+	# # build decoder
+
+	# input_vals = Input(shape=(encoding_dim,))
+
+	# decoded_layer = autoencoder.layers[num_layers+1](input_vals)
+	# for n in range(num_layers):
+	# 	decoded_layer = autoencoder.layers[n+num_layers+2](decoded_layer)
+
+	# decoder = Model(input_vals, decoded_layer)
 
 	autoencoder.compile(optimizer = 'adadelta', loss = 'mean_squared_error')
 
 	print(state_derivs)
 
 	autoencoder.fit(state_derivs, state_derivs,
-                epochs=500,
+                epochs=1000,
                 batch_size=256,
                 shuffle=True)
 

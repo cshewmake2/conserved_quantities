@@ -17,11 +17,11 @@ x_dot = [f(x,0) for x in x_t]
 
 x_dot = np.array(x_dot)
 
-[autoencoder, encoder, decoder] = ae.train_encoder(x_dot, 1 , 2 , 0)
+[autoencoder, encoder, decoder] = ae.train_encoder(x_t, 1 , 1 , 0)
 
-x_hat = autoencoder.predict(x_dot)
+x_hat = autoencoder.predict(x_t)
 
-z_t = encoder.predict(x_dot)
+z_t = encoder.predict(x_t)
 
 plt.plot(x_t[:,0],x_t[:,1])
 plt.plot(x_hat[:,0],x_hat[:,1])
